@@ -5,8 +5,9 @@ support.py: Kernel Cache support functions
 import logging
 import plistlib
 
-from pathlib  import Path
-from datetime import datetime
+from pathlib import Path
+
+from .legacy_kexts import relocate_legacy_kexts
 
 from ...patchsets import PatchType
 
@@ -148,18 +149,7 @@ class KernelCacheSupport:
         if self.detected_os < os_data.os_data.ventura:
             return
 
-        relocation_path = "/Library/Relocated Extensions"
-        if not Path(relocation_path).exists():
-            subprocess_wrapper.run_as_root(["/bin/mkdir", relocation_path])
-
-        for file in Path("/Library/Extensions").glob("*.kext"):
-            try:
-                if datetime.fromtimestamp(file.stat().st_mtime) < datetime(2021, 10, 1):
-                    logging.info(f"  - Relocating {file.name} kext to {relocation_path}")
-                    if Path(relocation_path) / Path(file.name).exists():
-                        subprocess_wrapper.run_as_root(["/bin/rm", "-Rf", relocation_path / Path(file.name)])
-                    subprocess_wrapper.run_as_root(["/bin/mv", file, relocation_path])
-            except:
-                # Some users have the most cursed /L*/E* folders
-                # ex. Symlinks pointing to symlinks pointing to dead files
-                pass
+        relocate_legacy_kexts(
+            mount_location_data=self.mount_location_data,
+            run_as_root=subprocess_wrapper.run_as_root_and_verify,
+        )

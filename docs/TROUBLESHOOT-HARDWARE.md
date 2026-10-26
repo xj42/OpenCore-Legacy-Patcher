@@ -3,6 +3,7 @@
 #### General
 
 * [No Brightness Control](#no-brightness-control)
+* [iPhone detected on USB but missing from Finder or Xcode](#iphone-detected-on-usb-but-missing-from-finder-or-xcode)
 * [Cannot connect Wi-Fi on Monterey with legacy cards](#cannot-connect-wi-fi-on-monterey-with-legacy-cards)
 * [No Graphics Acceleration](#no-graphics-acceleration)
 * [No DisplayPort Output on Mac Pros with NVIDIA Kepler](#no-displayport-output-on-mac-pros-with-nvidia-kepler)
@@ -22,6 +23,21 @@
 * [Cannot Pair Bluetooth Devices](#cannot-pair-bluetooth-devices)
 
 For those unfamiliar with what is considered a non-Metal GPU, see the chart in [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html#what-is-metal-and-non-metal)
+
+## iPhone detected on USB but missing from Finder or Xcode
+
+An obsolete `AppleMobileDevice.kext` in `/Library/Extensions` can override the current Apple bundle in `/Library/Apple/System/Library/Extensions` when root patching rebuilds the kernel collections. Both bundles may report version `4.0`, despite having different device-matching rules. The legacy bundle matches iPhones using placeholder `IOService` personalities, preventing the normal composite USB driver from configuring the device.
+
+One symptom is that System Information lists the iPhone, but Finder never displays it and the phone never asks whether to trust the computer. The `usbmuxd` log may contain:
+
+```text
+deviceRequiresMuxConfiguration: kCDCDoNotMatchThisDevice is NULL
+AddNewDevice: ignoring found device since configuration is disabled
+```
+
+OCLP's legacy-extension cleanup runs before rebuilding the kernel collections on Ventura and newer. A build containing the relocation fix moves extensions older than October 2021 to `/Library/Relocated Extensions`, preserving existing backups. Reapply root patches with that build and reboot so the obsolete bundle is excluded from the rebuilt collections. Do not remove the current Apple bundle from `/Library/Apple/System/Library/Extensions`.
+
+These log messages alone do not establish that a legacy bundle is responsible. Check the installed bundles and the kernel collection contents before applying this diagnosis to another machine.
 
 ## No Brightness Control
 

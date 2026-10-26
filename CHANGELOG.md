@@ -1,6 +1,8 @@
 # OpenCore Legacy Patcher changelog
 
 ## 3.0.0
+- Fix obsolete extensions being silently retained during kernel collection cleanup
+  - Prevents legacy AppleMobileDevice.kext copies from overriding current iPhone USB support
 - Implement macOS Tahoe support (EduCovas & ASentientBot)
 - Implement improved wireless patches (EduCovas)
 - Implement improved non-Metal patches on all operating systems (EduCovas)
