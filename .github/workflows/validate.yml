@@ -15,5 +15,7 @@ jobs:
     if: github.repository_owner == 'dortania'
     steps:
       - uses: actions/checkout@v4
+      - name: Test kernel collection cleanup
+        run: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m unittest discover -s ci_tooling/tests -v
       - name: Validate
         run: /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 OpenCore-Patcher-GUI.command --validate

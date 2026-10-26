@@ -18,8 +18,10 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: Install Dependencies
         run: python3 -m pip install -r requirements.txt
+      - name: Test kernel collection cleanup
+        run: python3 -m unittest discover -s ci_tooling/tests -v
       - name: Validate
         run: python3 OpenCore-Patcher-GUI.command --validate
